@@ -1,6 +1,8 @@
 import { Http, Headers , RequestOptions , Response } from '@angular/http';
 import { Injectable } from '@angular/core';
-import { map ,  tap  } from 'rxjs/operators';
+import { catchError , map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { _throw } from 'rxjs/observable/throw';
 
 @Injectable({
   providedIn: 'root'
@@ -11,25 +13,49 @@ export class AuthService {
 
     constructor(private http: Http) { }
 
-    login(model: any){
+    login(model: any) {
       return this.http.post(this.baseUrl + 'login' , model , this.registerOptions())
-                      .pipe(tap(console.log),
-                            map((data: Response) => {
+                      .pipe(map((data: Response) => {
                               const user  = data.json();
                               if (user) {
                                 localStorage.setItem('token', user.tokenString);
                                 this.userToken = user.token;
                               }
-                            }));
+                            }),
+                            catchError(err => this.handleError(err)));
 
   }
 
   register(model: any) {
     return this.http.post(this.baseUrl + 'register', model , this.registerOptions())
+                    .pipe(map(data => {
+                      return data;
+                    }),
+                    catchError(this.handleError));
   }
 
   registerOptions() {
     const headers = new Headers({'Content-type' : 'application/json'});
     return new RequestOptions({headers : headers});
   }
+
+  private handleError(error: any) {
+    const appError = error.headers.get('Application-Error');
+    if (appError) {
+      return _throw(appError);
+    }
+    const servError = error.json();
+    let modelStateErrors = '';
+    if (servError) {
+      for (const key in servError) {
+        if (servError[key]) {
+          modelStateErrors += servError[key] + '\n';
+        }
+      }
+    }
+    return _throw(
+      modelStateErrors || 'Server Error'
+    );
+  }
+
 }
