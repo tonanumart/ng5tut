@@ -12,7 +12,7 @@
     </div>
     <div id="navbar" class="navbar-collapse collapse">
 
-      <ul class="nav navbar-nav">
+      <ul class="nav navbar-nav" *ngIf="loggedIn()" >
         <li>
           <a href="#">Matches</a>
         </li>
@@ -35,16 +35,30 @@
       </form>
       <ul *ngIf="loggedIn()" class="nav navbar-nav navbar-right">
         <li>
-          <a href="#">Welcome</a>
+          <a class="dropdown-item" href="#" (click)="logout()">Logout</a>
         </li>
-        <li>
-          <a href="#" (click)="logout()">Logout</a>
+        <li dropdown class="dropdown">
+          <a class="dropdown-toggle" href="#" dropdownToggle>Welcome {{authService.decodedToken?.unique_name | titlecase }}
+            <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu" *dropdownMenu>
+            <li>
+              <a href="#">
+                <i class="fa fa-user">Edit Profile</i>
+              </a>
+            </li>
+            <li role="separator" class="divider"></li>
+            <li>
+              <a class="dropdown-item" (click)="logout()">
+                <i class="fa fa-sign-out">Logout</i>
+              </a>
+            </li>
+          </ul>
         </li>
-      </ul>>
+      </ul>
     </div>
     <!--/.navbar-collapse -->
-    
-  </div>
-  
-</nav>
 
+  </div>
+
+</nav>
